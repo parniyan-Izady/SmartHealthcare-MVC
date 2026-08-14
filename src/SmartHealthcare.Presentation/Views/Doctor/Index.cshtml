@@ -1,0 +1,131 @@
+@model DoctorListViewModel
+@{
+    ViewData["Title"] = "Medical Specialists";
+}
+
+<div class="space-y-6">
+    <!-- Header with Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Doctors Directory</h1>
+            <p class="text-slate-500 text-sm mt-0.5">Browse certified medical specialists and department doctors</p>
+        </div>
+        <a asp-controller="Doctor" asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-xl shadow-sm transition">
+            <i class="fa-solid fa-user-plus text-xs"></i> Register New Doctor
+        </a>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <form method="get" asp-action="Index" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="sm:col-span-2 relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+            </span>
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Search doctor name or license..." 
+                   class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+        </div>
+        <div>
+            <input type="text" name="specialty" value="@Model.Specialty" placeholder="Specialty (e.g. Cardiology)" 
+                   class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="flex-1 py-2 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-medium transition">
+                Filter
+            </button>
+            @if (!string.IsNullOrEmpty(Model.SearchTerm) || !string.IsNullOrEmpty(Model.Specialty))
+            {
+                <a asp-action="Index" class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm transition flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+            }
+        </div>
+    </form>
+
+    <!-- Doctors Cards / Table Grid -->
+    @if (!Model.Doctors.Any())
+    {
+        <div class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <i class="fa-solid fa-user-doctor text-4xl text-slate-300 mb-3"></i>
+            <h3 class="font-bold text-slate-800 text-base">No doctors found</h3>
+            <p class="text-slate-500 text-sm mt-1">Try adjusting your search criteria or register a new doctor.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var doc in Model.Doctors)
+            {
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:border-teal-300 transition">
+                    <div>
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold text-lg">
+                                @doc.FullName.Substring(0, 1)
+                            </div>
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full @(doc.IsActive ? "bg-teal-50 text-teal-700" : "bg-slate-100 text-slate-500")">
+                                @(doc.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </div>
+
+                        <div class="mt-4">
+                            <h3 class="font-bold text-slate-900 text-base leading-tight">Dr. @doc.FullName</h3>
+                            <p class="text-xs font-medium text-teal-600 mt-0.5">@doc.MedicalSpecialty</p>
+                        </div>
+
+                        <div class="mt-4 space-y-1.5 text-xs text-slate-600">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-regular fa-envelope text-slate-400 w-4"></i>
+                                <span class="truncate">@doc.Email</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-id-badge text-slate-400 w-4"></i>
+                                <span>License: @doc.MedicalLicenseNumber</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-dollar-sign text-slate-400 w-4"></i>
+                                <span>Fee: $@doc.ConsultationFee</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <a asp-action="Details" asp-route-id="@doc.Id" class="text-xs font-semibold text-slate-700 hover:text-teal-600">
+                            View Profile &rarr;
+                        </a>
+                        <div class="flex items-center gap-1">
+                            <a asp-action="Edit" asp-route-id="@doc.Id" class="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition" title="Edit">
+                                <i class="fa-regular fa-pen-to-square text-sm"></i>
+                            </a>
+                            <a asp-controller="Appointment" asp-action="Book" class="px-3 py-1.5 bg-teal-50 text-teal-700 text-xs font-semibold rounded-lg hover:bg-teal-100 transition">
+                                Book
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="flex items-center justify-between bg-white px-4 py-3 rounded-2xl border border-slate-200 text-sm">
+                <span class="text-xs text-slate-500">Page @Model.Page of @Model.TotalPages (@Model.TotalCount total)</span>
+                <div class="flex gap-2">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <a asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-searchTerm="@Model.SearchTerm" asp-route-specialty="@Model.Specialty"
+                           class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-medium text-slate-700 transition">
+                            &larr; Previous
+                        </a>
+                    }
+                    @if (Model.HasNextPage)
+                    {
+                        <a asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-searchTerm="@Model.SearchTerm" asp-route-specialty="@Model.Specialty"
+                           class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-medium text-slate-700 transition">
+                            Next &rarr;
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

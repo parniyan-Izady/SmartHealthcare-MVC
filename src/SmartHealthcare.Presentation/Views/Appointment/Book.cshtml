@@ -1,0 +1,72 @@
+@model AppointmentBookViewModel
+@{
+    ViewData["Title"] = "Book Appointment";
+}
+
+<div class="max-w-2xl mx-auto space-y-6">
+    <a asp-action="Index" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-teal-600">
+        <i class="fa-solid fa-arrow-left"></i> Back to Appointments
+    </a>
+
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-slate-100 pb-4 mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">Book Patient Appointment</h1>
+            <p class="text-sm text-slate-500 mt-1">Schedule a doctor consultation slot</p>
+        </div>
+
+        <form asp-action="Book" method="post" class="space-y-4">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl"></div>
+
+            <div>
+                <label asp-for="DoctorId" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Select Doctor</label>
+                <select asp-for="DoctorId" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
+                    <option value="">-- Choose Specialist --</option>
+                    @foreach (var doc in Model.AvailableDoctors)
+                    {
+                        <option value="@doc.Id">Dr. @doc.FullName (@doc.MedicalSpecialty) - $@doc.ConsultationFee</option>
+                    }
+                </select>
+                <span asp-validation-for="DoctorId" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div>
+                <label asp-for="PatientId" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Patient Guid ID</label>
+                <input asp-for="PatientId" placeholder="e.g. 00000000-0000-0000-0000-000000000000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                <span asp-validation-for="PatientId" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="StartTimeUtc" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="StartTimeUtc" type="datetime-local" value="@Model.StartTimeUtc.ToString("yyyy-MM-ddTHH:mm")"
+                           class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                    <span asp-validation-for="StartTimeUtc" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="EndTimeUtc" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="EndTimeUtc" type="datetime-local" value="@Model.EndTimeUtc.ToString("yyyy-MM-ddTHH:mm")"
+                           class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                    <span asp-validation-for="EndTimeUtc" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="ReasonForVisit" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                <textarea asp-for="ReasonForVisit" rows="3" placeholder="Symptoms, checkup notes, reason for visit..."
+                          class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+                <span asp-validation-for="ReasonForVisit" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button type="submit" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-xl shadow-sm transition">
+                    Confirm Appointment
+                </button>
+                <a asp-action="Index" class="py-2.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

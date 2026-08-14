@@ -1,0 +1,84 @@
+@model DoctorCreateViewModel
+@{
+    ViewData["Title"] = "Register Doctor";
+}
+
+<div class="max-w-2xl mx-auto space-y-6">
+    <a asp-action="Index" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-teal-600">
+        <i class="fa-solid fa-arrow-left"></i> Back to Doctors
+    </a>
+
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-slate-100 pb-4 mb-6">
+            <h1 class="text-2xl font-bold text-slate-900">Register New Doctor</h1>
+            <p class="text-sm text-slate-500 mt-1">Create physician profile and clinical access</p>
+        </div>
+
+        <form asp-action="Create" method="post" class="space-y-4">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl"></div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="FirstName" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="FirstName" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="FirstName" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="LastName" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="LastName" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="LastName" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Email" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="Email" type="email" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="Email" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="Password" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="Password" type="password" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="Password" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="MedicalLicenseNumber" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="MedicalLicenseNumber" placeholder="MD-12345" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="MedicalLicenseNumber" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="MedicalSpecialty" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="MedicalSpecialty" placeholder="Cardiology, Neurology..." class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="MedicalSpecialty" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="ConsultationFee" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="ConsultationFee" type="number" step="0.01" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="ConsultationFee" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+                <div>
+                    <label asp-for="OfficeAddress" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"></label>
+                    <input asp-for="OfficeAddress" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                    <span asp-validation-for="OfficeAddress" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button type="submit" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-xl shadow-sm transition">
+                    Register Doctor
+                </button>
+                <a asp-action="Index" class="py-2.5 px-5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

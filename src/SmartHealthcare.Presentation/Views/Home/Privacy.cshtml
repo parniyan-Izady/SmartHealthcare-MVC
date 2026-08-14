@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+<div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+    <div class="border-b border-slate-100 pb-4">
+        <h1 class="text-2xl font-bold text-slate-900">Privacy & Clinical Data Protection</h1>
+        <p class="text-sm text-slate-500 mt-1">Last updated: @DateTime.UtcNow.ToString("MMMM yyyy")</p>
+    </div>
+
+    <div class="prose prose-slate text-sm text-slate-600 space-y-4">
+        <p>SmartHealthcare System is dedicated to maintaining the highest security and confidentiality standards for Electronic Medical Records (EMR) and patient appointment data.</p>
+        
+        <h2 class="text-base font-bold text-slate-900">1. Data Storage & Security</h2>
+        <p>All sensitive medical records, identity user hashes, and clinical timestamps are encrypted at rest and in transit adhering to modern healthcare regulations.</p>
+
+        <h2 class="text-base font-bold text-slate-900">2. Role-Based Access</h2>
+        <p>Patient reports and consultation data are restricted according to assigned identity roles (Admin, Doctor, Patient).</p>
+    </div>
+</div>

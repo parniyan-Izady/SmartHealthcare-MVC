@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SmartHealthcare</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="min-h-full flex flex-col font-sans text-slate-800 antialiased selection:bg-teal-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-8">
+                    <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-md shadow-teal-500/20 group-hover:bg-teal-700 transition">
+                            <i class="fa-solid fa-heart-pulse text-lg"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-900 text-lg tracking-tight leading-none">SmartHealthcare</span>
+                            <span class="text-xs text-teal-600 font-medium tracking-wide">CLINICAL PLATFORM</span>
+                        </div>
+                    </a>
+
+                    <!-- Nav Links -->
+                    <nav class="hidden md:flex items-center gap-1">
+                        <a asp-controller="Home" asp-action="Index" 
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition flex items-center gap-2">
+                            <i class="fa-solid fa-gauge text-slate-400"></i> Dashboard
+                        </a>
+                        <a asp-controller="Doctor" asp-action="Index" 
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition flex items-center gap-2">
+                            <i class="fa-solid fa-user-doctor text-slate-400"></i> Doctors
+                        </a>
+                        <a asp-controller="Appointment" asp-action="Index" 
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-slate-400"></i> Appointments
+                        </a>
+                        <a asp-controller="Patient" asp-action="Index" 
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition flex items-center gap-2">
+                            <i class="fa-solid fa-users text-slate-400"></i> Patient Reports
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- User & Action Buttons -->
+                <div class="flex items-center gap-3">
+                    <a asp-controller="Appointment" asp-action="Book" 
+                       class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 shadow-sm transition">
+                        <i class="fa-solid fa-plus text-xs"></i> Book Appointment
+                    </a>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="flex items-center gap-3 pl-2 border-l border-slate-200">
+                            <div class="text-right hidden sm:block">
+                                <div class="text-sm font-semibold text-slate-900">@User.Identity.Name</div>
+                                <div class="text-xs text-slate-500">@User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value</div>
+                            </div>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" 
+                                        class="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition" 
+                                        title="Logout">
+                                    <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex items-center gap-2">
+                            <a asp-controller="Account" asp-action="Login" 
+                               class="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 transition">
+                                Log in
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" 
+                               class="px-3.5 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition">
+                                Register
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Alerts (Success / Error TempData) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="mb-6 rounded-xl bg-teal-50 border border-teal-200 p-4 flex items-center gap-3 text-teal-800 shadow-sm" role="alert">
+                <i class="fa-solid fa-circle-check text-teal-600 text-lg"></i>
+                <div class="text-sm font-medium">@TempData["SuccessMessage"]</div>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 flex items-center gap-3 text-red-800 shadow-sm" role="alert">
+                <i class="fa-solid fa-triangle-exclamation text-red-600 text-lg"></i>
+                <div class="text-sm font-medium">@TempData["ErrorMessage"]</div>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-slate-700">SmartHealthcare System</span> &copy; @DateTime.UtcNow.Year
+            </div>
+            <div class="flex gap-6">
+                <a asp-controller="Home" asp-action="Privacy" class="hover:text-teal-600 transition">Privacy Policy</a>
+                <span>MediatR + CQRS + Clean Architecture</span>
+            </div>
+        </div>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

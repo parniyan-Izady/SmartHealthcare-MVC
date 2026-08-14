@@ -1,4 +1,5 @@
 using System.Data;
+using System.Data.Common;
 using SmartHealthcare.Application.Common.CQRS;
 using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
@@ -6,7 +7,7 @@ using SmartHealthcare.Application.DTOs;
 namespace SmartHealthcare.Application.Features.Patients.Queries.GetHighPerformancePatientReport;
 
 /// <summary>
-/// CQRS Read Model Query Handler executing optimized SQL query via ADO.NET connection factory.
+/// CQRS Read Model Query Handler executing optimized SQL query via standard IDbConnection and DbDataReader.
 /// </summary>
 public class GetHighPerformancePatientReportQueryHandler : IQueryHandler<GetHighPerformancePatientReportQuery, IReadOnlyList<PatientReportDto>>
 {
@@ -42,18 +43,35 @@ public class GetHighPerformancePatientReportQueryHandler : IQueryHandler<GetHigh
         if (connection.State != ConnectionState.Open)
             connection.Open();
 
-        using var reader = await ((Microsoft.Data.SqlClient.SqlCommand)command).ExecuteReaderAsync(cancellationToken);
-
-        while (await reader.ReadAsync(cancellationToken))
+        if (command is DbCommand dbCommand)
         {
-            reports.Add(new PatientReportDto(
-                reader.GetGuid(0),
-                reader.GetString(1),
-                reader.GetString(2),
-                reader.GetString(3),
-                reader.GetInt32(4),
-                reader.IsDBNull(5) ? null : reader.GetDateTime(5)
-            ));
+            using var reader = await dbCommand.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                reports.Add(new PatientReportDto(
+                    reader.GetGuid(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    reader.GetString(3),
+                    reader.GetInt32(4),
+                    reader.IsDBNull(5) ? null : reader.GetDateTime(5)
+                ));
+            }
+        }
+        else
+        {
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                reports.Add(new PatientReportDto(
+                    reader.GetGuid(0),
+                    reader.GetString(1),
+                    reader.GetString(2),
+                    reader.GetString(3),
+                    reader.GetInt32(4),
+                    reader.IsDBNull(5) ? null : reader.GetDateTime(5)
+                ));
+            }
         }
 
         return reports;

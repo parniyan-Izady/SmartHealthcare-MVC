@@ -23,4 +23,12 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
             .Include(p => p.Appointments)
             .FirstOrDefaultAsync(p => p.Id == patientId && !p.IsDeleted, cancellationToken);
     }
+
+    public async Task<Patient?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Patients
+            .Include(p => p.User)
+            .Include(p => p.Appointments)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
+    }
 }

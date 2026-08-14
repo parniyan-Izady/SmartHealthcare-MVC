@@ -7,4 +7,5 @@ public interface IPatientRepository : IGenericRepository<Patient>
 {
     Task<Patient?> GetByNationalCodeAsync(string nationalCode, CancellationToken cancellationToken = default);
     Task<Patient?> GetWithAppointmentsAsync(Guid patientId, CancellationToken cancellationToken = default);
+    Task<Patient?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 }
