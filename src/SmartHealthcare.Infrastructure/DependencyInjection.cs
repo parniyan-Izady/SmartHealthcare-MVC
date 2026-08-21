@@ -6,7 +6,6 @@ using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.Repositories;
 using SmartHealthcare.Infrastructure.Identity;
 using SmartHealthcare.Infrastructure.Persistence.UnitOfWork;
-using SmartHealthcare.Infrastructure.Persistence.AdoNet;
 using SmartHealthcare.Infrastructure.Persistence.DbContext;
 using SmartHealthcare.Infrastructure.Persistence.Repositories;
 using SmartHealthcare.Infrastructure.Security;
@@ -23,8 +22,6 @@ public static class DependencyInjection
         // EF Core Registration
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
-
-        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
         // ASP.NET Core Identity Registration
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
@@ -44,13 +41,10 @@ public static class DependencyInjection
         // Repositories & Unit Of Work
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IDoctorRepository, DoctorRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-        services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
-
-        // ADO.NET Registration (CQRS Read Model Optimization via ISqlConnectionFactory)
-        services.AddSingleton<ISqlConnectionFactory>(new SqlConnectionFactory(connectionString));
 
         // Security & JWT
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();

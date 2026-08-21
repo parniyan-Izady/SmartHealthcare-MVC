@@ -1,19 +1,4 @@
-using SmartHealthcare.Domain.Enums;
-
 namespace SmartHealthcare.Application.DTOs;
-
-public record CreatePatientRequest(
-    string FirstName,
-    string LastName,
-    string Email,
-    string Password,
-    string NationalCode,
-    DateTime DateOfBirth,
-    Gender Gender,
-    string PhoneNumber,
-    string? MedicalInsuranceNumber,
-    string? BloodGroup
-);
 
 public record PatientResponse(
     Guid Id,

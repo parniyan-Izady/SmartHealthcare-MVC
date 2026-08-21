@@ -27,11 +27,5 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.StartUtc, opt => opt.MapFrom(src => src.AppointmentStartUtc))
             .ForMember(dest => dest.EndUtc, opt => opt.MapFrom(src => src.AppointmentEndUtc))
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
-
-        // 4. MedicalRecord Mappings
-        CreateMap<MedicalRecord, MedicalRecordResponse>()
-            .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient != null && src.Patient.User != null ? $"{src.Patient.User.FirstName} {src.Patient.User.LastName}" : "Unknown Patient"))
-            .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor != null && src.Doctor.User != null ? $"Dr. {src.Doctor.User.FirstName} {src.Doctor.User.LastName}" : "Unknown Doctor"))
-            .ForMember(dest => dest.CreatedAtUtc, opt => opt.MapFrom(src => src.CreatedAtUtc));
     }
 }

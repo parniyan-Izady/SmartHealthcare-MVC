@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using SmartHealthcare.Application.Common.CQRS;
 using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
+using SmartHealthcare.Application.Repositories;
 using SmartHealthcare.Domain.Exceptions;
 
 namespace SmartHealthcare.Application.Features.Auth.Commands.LoginUser;
@@ -9,16 +9,16 @@ namespace SmartHealthcare.Application.Features.Auth.Commands.LoginUser;
 public class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, AuthResponse>
 {
     private readonly IIdentityService _identityService;
-    private readonly IApplicationDbContext _dbContext;
+    private readonly IUserRepository _userRepository;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     public LoginUserCommandHandler(
         IIdentityService identityService,
-        IApplicationDbContext dbContext,
+        IUserRepository userRepository,
         IJwtTokenGenerator jwtTokenGenerator)
     {
         _identityService = identityService;
-        _dbContext = dbContext;
+        _userRepository = userRepository;
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
@@ -30,8 +30,7 @@ public class LoginUserCommandHandler : ICommandHandler<LoginUserCommand, AuthRes
             throw new DomainException("Invalid email or password.");
         }
 
-        var domainUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId, cancellationToken)
-            ?? await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+        var domainUser = await _userRepository.GetByIdentityUserIdAsync(identityUserId, cancellationToken);
 
         if (domainUser == null)
         {

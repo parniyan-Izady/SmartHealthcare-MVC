@@ -12,21 +12,21 @@ namespace SmartHealthcare.Application.Features.Doctors.Commands.CreateDoctor;
 public class CreateDoctorCommandHandler : ICommandHandler<CreateDoctorCommand, DoctorResponse>
 {
     private readonly IDoctorRepository _doctorRepository;
+    private readonly IUserRepository _userRepository;
     private readonly IIdentityService _identityService;
-    private readonly IApplicationDbContext _dbContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public CreateDoctorCommandHandler(
         IDoctorRepository doctorRepository,
+        IUserRepository userRepository,
         IIdentityService identityService,
-        IApplicationDbContext dbContext,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
         _doctorRepository = doctorRepository;
+        _userRepository = userRepository;
         _identityService = identityService;
-        _dbContext = dbContext;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
@@ -49,7 +49,7 @@ public class CreateDoctorCommandHandler : ICommandHandler<CreateDoctorCommand, D
         try
         {
             var user = new User(request.FirstName, request.LastName, request.Email, UserRole.Doctor, identityUserId);
-            _dbContext.Users.Add(user);
+            await _userRepository.AddAsync(user, cancellationToken);
 
             var doctor = new Doctor(user.Id, request.MedicalLicenseNumber, request.MedicalSpecialty, request.ConsultationFee, request.OfficeAddress);
             await _doctorRepository.AddAsync(doctor, cancellationToken);

@@ -31,4 +31,21 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
             .Include(p => p.Appointments)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<PatientReportDto>> GetPatientReportsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Patients
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted)
+            .Select(p => new PatientReportDto(
+                p.Id,
+                p.User != null ? p.User.FirstName + " " + p.User.LastName : string.Empty,
+                p.NationalCode,
+                p.PhoneNumber,
+                p.Appointments.Count(a => !a.IsDeleted),
+                p.Appointments.Where(a => !a.IsDeleted).Max(a => (DateTime?)a.AppointmentStartUtc)
+            ))
+            .OrderByDescending(r => r.TotalAppointmentsCount)
+            .ToListAsync(cancellationToken);
+    }
 }

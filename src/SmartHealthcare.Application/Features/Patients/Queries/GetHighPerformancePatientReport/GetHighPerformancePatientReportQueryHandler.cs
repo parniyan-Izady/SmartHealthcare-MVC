@@ -1,79 +1,23 @@
-using System.Data;
-using System.Data.Common;
 using SmartHealthcare.Application.Common.CQRS;
-using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
+using SmartHealthcare.Application.Repositories;
 
 namespace SmartHealthcare.Application.Features.Patients.Queries.GetHighPerformancePatientReport;
 
 /// <summary>
-/// CQRS Read Model Query Handler executing optimized SQL query via standard IDbConnection and DbDataReader.
+/// CQRS Read Model Query Handler executing optimized query via Repository.
 /// </summary>
 public class GetHighPerformancePatientReportQueryHandler : IQueryHandler<GetHighPerformancePatientReportQuery, IReadOnlyList<PatientReportDto>>
 {
-    private readonly ISqlConnectionFactory _sqlConnectionFactory;
+    private readonly IPatientRepository _patientRepository;
 
-    public GetHighPerformancePatientReportQueryHandler(ISqlConnectionFactory sqlConnectionFactory)
+    public GetHighPerformancePatientReportQueryHandler(IPatientRepository patientRepository)
     {
-        _sqlConnectionFactory = sqlConnectionFactory;
+        _patientRepository = patientRepository;
     }
 
     public async Task<IReadOnlyList<PatientReportDto>> Handle(GetHighPerformancePatientReportQuery request, CancellationToken cancellationToken)
     {
-        var reports = new List<PatientReportDto>();
-
-        using var connection = _sqlConnectionFactory.CreateConnection();
-        using var command = connection.CreateCommand();
-
-        command.CommandText = @"
-            SELECT 
-                p.Id AS PatientId,
-                u.FirstName + ' ' + u.LastName AS FullName,
-                p.NationalCode,
-                p.PhoneNumber,
-                COUNT(a.Id) AS TotalAppointmentsCount,
-                MAX(a.AppointmentStartUtc) AS LastAppointmentDateUtc
-            FROM Patients p
-            INNER JOIN Users u ON p.UserId = u.Id
-            LEFT JOIN Appointments a ON a.PatientId = p.Id
-            WHERE p.IsDeleted = 0
-            GROUP BY p.Id, u.FirstName, u.LastName, p.NationalCode, p.PhoneNumber
-            ORDER BY TotalAppointmentsCount DESC";
-
-        if (connection.State != ConnectionState.Open)
-            connection.Open();
-
-        if (command is DbCommand dbCommand)
-        {
-            using var reader = await dbCommand.ExecuteReaderAsync(cancellationToken);
-            while (await reader.ReadAsync(cancellationToken))
-            {
-                reports.Add(new PatientReportDto(
-                    reader.GetGuid(0),
-                    reader.GetString(1),
-                    reader.GetString(2),
-                    reader.GetString(3),
-                    reader.GetInt32(4),
-                    reader.IsDBNull(5) ? null : reader.GetDateTime(5)
-                ));
-            }
-        }
-        else
-        {
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                reports.Add(new PatientReportDto(
-                    reader.GetGuid(0),
-                    reader.GetString(1),
-                    reader.GetString(2),
-                    reader.GetString(3),
-                    reader.GetInt32(4),
-                    reader.IsDBNull(5) ? null : reader.GetDateTime(5)
-                ));
-            }
-        }
-
-        return reports;
+        return await _patientRepository.GetPatientReportsAsync(cancellationToken);
     }
 }

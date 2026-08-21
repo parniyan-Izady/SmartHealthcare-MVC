@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using SmartHealthcare.Application.Common.CQRS;
 using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
+using SmartHealthcare.Application.Repositories;
 using SmartHealthcare.Domain.Entities;
 using SmartHealthcare.Domain.Exceptions;
 
@@ -10,22 +10,25 @@ namespace SmartHealthcare.Application.Features.Auth.Commands.RegisterUser;
 public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, AuthResponse>
 {
     private readonly IIdentityService _identityService;
-    private readonly IApplicationDbContext _dbContext;
+    private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     public RegisterUserCommandHandler(
         IIdentityService identityService,
-        IApplicationDbContext dbContext,
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
         IJwtTokenGenerator jwtTokenGenerator)
     {
         _identityService = identityService;
-        _dbContext = dbContext;
+        _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
     public async Task<AuthResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email, cancellationToken);
+        var existingUser = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
         if (existingUser != null)
         {
             throw new DomainException($"Email '{request.Email}' is already registered.");
@@ -44,8 +47,8 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, A
 
         try
         {
-            _dbContext.Users.Add(domainUser);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _userRepository.AddAsync(domainUser, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {
