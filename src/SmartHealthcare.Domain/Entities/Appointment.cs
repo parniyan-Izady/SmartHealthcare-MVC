@@ -1,5 +1,6 @@
 using SmartHealthcare.Domain.Common;
 using SmartHealthcare.Domain.Enums;
+using SmartHealthcare.Domain.Exceptions;
 
 namespace SmartHealthcare.Domain.Entities;
 
@@ -23,7 +24,7 @@ public class Appointment : BaseEntity
     {
         if (endUtc <= startUtc)
         {
-            throw new ArgumentException("Appointment end time must be after start time.");
+            throw new InvalidAppointmentDurationException(startUtc, endUtc);
         }
 
         PatientId = patientId;
@@ -36,12 +37,37 @@ public class Appointment : BaseEntity
 
     public void Confirm()
     {
+        if (Status == AppointmentStatus.Cancelled)
+        {
+            throw new AppointmentAlreadyCancelledException(Id);
+        }
+
+        if (Status == AppointmentStatus.Completed)
+        {
+            throw new AppointmentAlreadyCompletedException(Id);
+        }
+
         Status = AppointmentStatus.Confirmed;
         MarkUpdated();
     }
 
     public void Cancel(string reason)
     {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new AppointmentCancellationReasonRequiredException();
+        }
+
+        if (Status == AppointmentStatus.Cancelled)
+        {
+            throw new AppointmentAlreadyCancelledException(Id);
+        }
+
+        if (Status == AppointmentStatus.Completed)
+        {
+            throw new AppointmentAlreadyCompletedException(Id);
+        }
+
         Status = AppointmentStatus.Cancelled;
         CancellationReason = reason;
         MarkUpdated();
@@ -49,6 +75,11 @@ public class Appointment : BaseEntity
 
     public void Complete()
     {
+        if (Status == AppointmentStatus.Cancelled)
+        {
+            throw new AppointmentAlreadyCancelledException(Id);
+        }
+
         Status = AppointmentStatus.Completed;
         MarkUpdated();
     }

@@ -1,16 +1,19 @@
 using SmartHealthcare.Domain.Common;
 using SmartHealthcare.Domain.Enums;
+using SmartHealthcare.Domain.Exceptions;
 
 namespace SmartHealthcare.Domain.Entities;
 
 public class Patient : BaseEntity
 {
-    public Guid UserId { get; private set; }
-    public User User { get; private set; } = default!;
+    public Guid IdentityUserId { get; private set; }
+    public string FirstName { get; private set; } = default!;
+    public string LastName { get; private set; } = default!;
+    public string Email { get; private set; } = default!;
+    public string PhoneNumber { get; private set; } = default!;
     public string NationalCode { get; private set; } = default!;
     public DateTime DateOfBirth { get; private set; }
     public Gender Gender { get; private set; }
-    public string PhoneNumber { get; private set; } = default!;
     public string? MedicalInsuranceNumber { get; private set; }
     public string? BloodGroup { get; private set; }
 
@@ -18,21 +21,53 @@ public class Patient : BaseEntity
 
     private Patient() { }
 
-    public Patient(Guid userId, string nationalCode, DateTime dateOfBirth, Gender gender, string phoneNumber, string? insuranceNumber = null, string? bloodGroup = null)
+    public Patient(
+        Guid identityUserId,
+        string firstName,
+        string lastName,
+        string email,
+        string phoneNumber,
+        string nationalCode,
+        DateTime dateOfBirth,
+        Gender gender,
+        string? insuranceNumber = null,
+        string? bloodGroup = null)
     {
-        UserId = userId;
+        if (string.IsNullOrWhiteSpace(nationalCode) || nationalCode.Trim().Length != 10)
+        {
+            throw new InvalidNationalCodeException(nationalCode);
+        }
+
+        if (dateOfBirth > DateTime.UtcNow)
+        {
+            throw new InvalidDateOfBirthException(dateOfBirth);
+        }
+
+        IdentityUserId = identityUserId;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        PhoneNumber = phoneNumber;
         NationalCode = nationalCode;
         DateOfBirth = dateOfBirth;
         Gender = gender;
-        PhoneNumber = phoneNumber;
         MedicalInsuranceNumber = insuranceNumber;
         BloodGroup = bloodGroup;
     }
 
-    public void UpdateContactInfo(string phoneNumber, string? insuranceNumber)
+    public void UpdateProfile(string firstName, string lastName, string email, string phoneNumber)
     {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
         PhoneNumber = phoneNumber;
+        MarkUpdated();
+    }
+
+    public void UpdateMedicalInfo(string? insuranceNumber, string? bloodGroup)
+    {
         MedicalInsuranceNumber = insuranceNumber;
+        BloodGroup = bloodGroup;
         MarkUpdated();
     }
 }
