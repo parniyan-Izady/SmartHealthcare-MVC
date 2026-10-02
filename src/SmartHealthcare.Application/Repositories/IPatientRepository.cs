@@ -7,7 +7,8 @@ namespace SmartHealthcare.Application.Repositories;
 public interface IPatientRepository : IGenericRepository<Patient>
 {
     Task<Patient?> GetByNationalCodeAsync(string nationalCode, CancellationToken cancellationToken = default);
+    Task<Patient?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<Patient?> GetWithAppointmentsAsync(Guid patientId, CancellationToken cancellationToken = default);
     Task<Patient?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<PatientReportDto>> GetPatientReportsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PatientReportDto>> GetPatientReportsAsync(string? searchTerm = null, Guid? doctorId = null, CancellationToken cancellationToken = default);
 }
