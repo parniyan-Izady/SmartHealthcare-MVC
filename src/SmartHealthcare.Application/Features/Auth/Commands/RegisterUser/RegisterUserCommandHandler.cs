@@ -1,8 +1,7 @@
+using AutoMapper;
 using SmartHealthcare.Application.Common.CQRS;
 using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
-using SmartHealthcare.Application.Repositories;
-using SmartHealthcare.Domain.Entities;
 using SmartHealthcare.Domain.Exceptions;
 
 namespace SmartHealthcare.Application.Features.Auth.Commands.RegisterUser;
@@ -10,54 +9,43 @@ namespace SmartHealthcare.Application.Features.Auth.Commands.RegisterUser;
 public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, AuthResponse>
 {
     private readonly IIdentityService _identityService;
-    private readonly IUserRepository _userRepository;
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IMapper _mapper;
 
     public RegisterUserCommandHandler(
         IIdentityService identityService,
-        IUserRepository userRepository,
-        IUnitOfWork unitOfWork,
-        IJwtTokenGenerator jwtTokenGenerator)
+        IJwtTokenGenerator jwtTokenGenerator,
+        IMapper mapper)
     {
         _identityService = identityService;
-        _userRepository = userRepository;
-        _unitOfWork = unitOfWork;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _mapper = mapper;
     }
 
     public async Task<AuthResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var existingUser = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
+        var existingUser = await _identityService.GetUserByEmailAsync(request.Email, cancellationToken);
         if (existingUser != null)
         {
             throw new DomainException($"Email '{request.Email}' is already registered.");
         }
 
-        // Phase 1: Create Identity Security User
-        var (succeeded, identityUserId, errors) = await _identityService.CreateIdentityUserAsync(request.Email, request.Password, cancellationToken);
+        var (succeeded, userId, errors) = await _identityService.CreateUserAsync(
+            request.Email,
+            request.Password,
+            request.Role,
+            cancellationToken);
+
         if (!succeeded)
         {
             var errorList = string.Join(", ", errors);
             throw new DomainException($"User registration failed: {errorList}");
         }
 
-        // Phase 2: Create Domain User Entity
-        var domainUser = new User(request.FirstName, request.LastName, request.Email, request.Role, identityUserId);
+        var user = await _identityService.GetUserByIdAsync(userId, cancellationToken)
+            ?? throw new DomainException("Created user could not be retrieved.");
 
-        try
-        {
-            await _userRepository.AddAsync(domainUser, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            // Compensation: Rollback Identity User on Domain save failure
-            await _identityService.DeleteIdentityUserAsync(identityUserId, cancellationToken);
-            throw new DomainException($"User registration failed during domain profile creation: {ex.Message}");
-        }
-
-        var token = _jwtTokenGenerator.GenerateToken(domainUser);
-        return new AuthResponse(domainUser.Id, $"{domainUser.FirstName} {domainUser.LastName}", domainUser.Email, domainUser.Role.ToString(), token);
+        var token = _jwtTokenGenerator.GenerateToken(user);
+        return _mapper.Map<AuthResponse>(user, opt => opt.Items["Token"] = token);
     }
 }
