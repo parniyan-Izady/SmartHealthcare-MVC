@@ -9,16 +9,13 @@ namespace SmartHealthcare.Application.Features.Auth.Commands.RegisterUser;
 public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, AuthResponse>
 {
     private readonly IIdentityService _identityService;
-    private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IMapper _mapper;
 
     public RegisterUserCommandHandler(
         IIdentityService identityService,
-        IJwtTokenGenerator jwtTokenGenerator,
         IMapper mapper)
     {
         _identityService = identityService;
-        _jwtTokenGenerator = jwtTokenGenerator;
         _mapper = mapper;
     }
 
@@ -45,7 +42,6 @@ public class RegisterUserCommandHandler : ICommandHandler<RegisterUserCommand, A
         var user = await _identityService.GetUserByIdAsync(userId, cancellationToken)
             ?? throw new DomainException("Created user could not be retrieved.");
 
-        var token = _jwtTokenGenerator.GenerateToken(user);
-        return _mapper.Map<AuthResponse>(user, opt => opt.Items["Token"] = token);
+        return _mapper.Map<AuthResponse>(user);
     }
 }

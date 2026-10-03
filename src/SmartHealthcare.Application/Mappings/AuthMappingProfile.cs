@@ -11,7 +11,6 @@ public class AuthMappingProfile : Profile
             .ForCtorParam("UserId", opt => opt.MapFrom(src => src.Id))
             .ForCtorParam("FullName", opt => opt.MapFrom(src => src.Email ?? string.Empty))
             .ForCtorParam("Email", opt => opt.MapFrom(src => src.Email ?? string.Empty))
-            .ForCtorParam("Role", opt => opt.MapFrom(src => src.Role.ToString()))
-            .ForCtorParam("Token", opt => opt.MapFrom((src, ctx) => ctx.Items.ContainsKey("Token") ? (string)ctx.Items["Token"] : string.Empty));
+            .ForCtorParam("Role", opt => opt.MapFrom(src => src.Role.ToString()));
     }
 }
