@@ -13,4 +13,4 @@ public class CancelAppointmentCommandValidator : AbstractValidator<CancelAppoint
             .NotEmpty().WithMessage("Cancellation reason is required.")
             .MaximumLength(250).WithMessage("Cancellation reason cannot exceed 250 characters.");
     }
-}
+}     
