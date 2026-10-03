@@ -7,6 +7,7 @@ public record CreateDoctorCommand(
     string FirstName,
     string LastName,
     string Email,
+    string PhoneNumber,
     string Password,
     string MedicalLicenseNumber,
     string MedicalSpecialty,

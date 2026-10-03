@@ -1,5 +1,6 @@
 using AutoMapper;
 using SmartHealthcare.Application.Common.CQRS;
+using SmartHealthcare.Application.Common.Exceptions;
 using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
 using SmartHealthcare.Application.Repositories;
@@ -12,56 +13,55 @@ namespace SmartHealthcare.Application.Features.Doctors.Commands.CreateDoctor;
 public class CreateDoctorCommandHandler : ICommandHandler<CreateDoctorCommand, DoctorResponse>
 {
     private readonly IDoctorRepository _doctorRepository;
-    private readonly IUserRepository _userRepository;
     private readonly IIdentityService _identityService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUserService;
 
     public CreateDoctorCommandHandler(
         IDoctorRepository doctorRepository,
-        IUserRepository userRepository,
         IIdentityService identityService,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        ICurrentUserService currentUserService)
     {
         _doctorRepository = doctorRepository;
-        _userRepository = userRepository;
         _identityService = identityService;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _currentUserService = currentUserService;
     }
 
     public async Task<DoctorResponse> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
+        if (!_currentUserService.IsInRole(UserRole.Admin))
+        {
+            throw new ForbiddenAccessException("Only administrators can register doctor profiles.");
+        }
         var existingDoctor = await _doctorRepository.GetByLicenseNumberAsync(request.MedicalLicenseNumber, cancellationToken);
         if (existingDoctor is not null)
         {
-            throw new DomainException("Doctor with this medical license number already exists.");
+            throw new DuplicateMedicalLicenseException(request.MedicalLicenseNumber);
         }
 
-        var (succeeded, identityUserId, errors) = await _identityService.CreateIdentityUserAsync(request.Email, request.Password, cancellationToken);
+        var (succeeded, userId, errors) = await _identityService.CreateUserAsync(
+            request.Email,
+            request.Password,
+            UserRole.Doctor,
+            cancellationToken);
+
         if (!succeeded)
         {
             var errorMsg = string.Join(", ", errors);
-            throw new DomainException($"Failed to create user account: {errorMsg}");
+            throw new DomainException($"Failed to create doctor user account: {errorMsg}");
         }
 
-        try
-        {
-            var user = new User(request.FirstName, request.LastName, request.Email, UserRole.Doctor, identityUserId);
-            await _userRepository.AddAsync(user, cancellationToken);
+        var doctor = _mapper.Map<Doctor>(request, opt => opt.Items["UserId"] = userId);
+        await _doctorRepository.AddAsync(doctor, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var doctor = new Doctor(user.Id, request.MedicalLicenseNumber, request.MedicalSpecialty, request.ConsultationFee, request.OfficeAddress);
-            await _doctorRepository.AddAsync(doctor, cancellationToken);
+        var detailedDoctor = await _doctorRepository.GetWithDetailsAsync(doctor.Id, cancellationToken) ?? doctor;
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            return _mapper.Map<DoctorResponse>(doctor);
-        }
-        catch
-        {
-            await _identityService.DeleteIdentityUserAsync(identityUserId, cancellationToken);
-            throw;
-        }
+        return _mapper.Map<DoctorResponse>(detailedDoctor);
     }
 }
