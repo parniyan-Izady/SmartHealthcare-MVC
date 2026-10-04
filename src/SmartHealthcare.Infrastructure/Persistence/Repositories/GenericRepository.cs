@@ -30,6 +30,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return await _dbContext.Set<T>().Where(predicate).Where(e => !e.IsDeleted).ToListAsync(cancellationToken);
     }
 
+    public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Set<T>().Where(e => !e.IsDeleted);
+        if (predicate != null)
+        {
+            query = query.Where(predicate);
+        }
+        return await query.CountAsync(cancellationToken);
+    }
+
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         await _dbContext.Set<T>().AddAsync(entity, cancellationToken);
@@ -43,7 +53,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 
     public void Delete(T entity)
     {
-        entity.SoftDelete();
+        entity.MarkDeleted();
         _dbContext.Set<T>().Update(entity);
     }
 }

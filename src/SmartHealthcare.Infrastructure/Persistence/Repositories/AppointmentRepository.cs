@@ -16,8 +16,8 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
         var endOfDay = startOfDay.AddDays(1);
 
         return await _dbContext.Appointments
-            .Include(a => a.Patient).ThenInclude(p => p.User)
-            .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .Include(a => a.Patient)
+            .Include(a => a.Doctor)
             .Where(a => a.DoctorId == doctorId &&
                         a.AppointmentStartUtc >= startOfDay &&
                         a.AppointmentStartUtc < endOfDay &&
@@ -29,8 +29,8 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
     public async Task<Appointment?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Appointments
-            .Include(a => a.Patient).ThenInclude(p => p.User)
-            .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .Include(a => a.Patient)
+            .Include(a => a.Doctor)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted, cancellationToken);
     }
 
@@ -47,8 +47,8 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.Appointments
-            .Include(a => a.Patient).ThenInclude(p => p.User)
-            .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .Include(a => a.Patient)
+            .Include(a => a.Doctor)
             .Where(a => !a.IsDeleted);
 
         if (doctorId.HasValue)
@@ -81,8 +81,6 @@ public class AppointmentRepository : GenericRepository<Appointment>, IAppointmen
         query = (sortBy?.ToLower()) switch
         {
             "status" => isDescending ? query.OrderByDescending(a => a.Status) : query.OrderBy(a => a.Status),
-            "doctor" => isDescending ? query.OrderByDescending(a => a.Doctor.User.LastName) : query.OrderBy(a => a.Doctor.User.LastName),
-            "patient" => isDescending ? query.OrderByDescending(a => a.Patient.User.LastName) : query.OrderBy(a => a.Patient.User.LastName),
             _ => isDescending ? query.OrderByDescending(a => a.AppointmentStartUtc) : query.OrderBy(a => a.AppointmentStartUtc),
         };
 
