@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.Repositories;
+using SmartHealthcare.Domain.Entities;
 using SmartHealthcare.Infrastructure.Identity;
 using SmartHealthcare.Infrastructure.Persistence.UnitOfWork;
 using SmartHealthcare.Infrastructure.Persistence.DbContext;
 using SmartHealthcare.Infrastructure.Persistence.Repositories;
-using SmartHealthcare.Infrastructure.Security;
 
 namespace SmartHealthcare.Infrastructure;
 
@@ -37,17 +37,15 @@ public static class DependencyInjection
         .AddDefaultTokenProviders();
 
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<ISignInService, SignInService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // Repositories & Unit Of Work
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPatientRepository, PatientRepository>();
         services.AddScoped<IDoctorRepository, DoctorRepository>();
         services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-
-        // Security & JWT
-        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
     }
