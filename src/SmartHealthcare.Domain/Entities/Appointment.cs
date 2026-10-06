@@ -35,21 +35,6 @@ public class Appointment : BaseEntity
         Status = AppointmentStatus.Scheduled;
     }
 
-    public void Confirm()
-    {
-        if (Status == AppointmentStatus.Cancelled)
-        {
-            throw new AppointmentAlreadyCancelledException(Id);
-        }
-
-        if (Status == AppointmentStatus.Completed)
-        {
-            throw new AppointmentAlreadyCompletedException(Id);
-        }
-
-        Status = AppointmentStatus.Confirmed;
-        MarkUpdated();
-    }
 
     public void Cancel(string reason)
     {
@@ -81,6 +66,22 @@ public class Appointment : BaseEntity
         }
 
         Status = AppointmentStatus.Completed;
+        MarkUpdated();
+    }
+
+    public void MarkNoShow()
+    {
+        if (Status == AppointmentStatus.Cancelled)
+        {
+            throw new AppointmentAlreadyCancelledException(Id);
+        }
+
+        if (Status == AppointmentStatus.Completed)
+        {
+            throw new AppointmentAlreadyCompletedException(Id);
+        }
+
+        Status = AppointmentStatus.NoShow;
         MarkUpdated();
     }
 }

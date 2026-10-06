@@ -30,12 +30,12 @@ public class CompleteAppointmentCommandHandler : ICommandHandler<CompleteAppoint
             return false;
         }
 
-        var isAdmin = _currentUserService.IsInRole(UserRole.Admin);
+        var isAdminOrStaff = _currentUserService.IsInRole(UserRole.Admin, UserRole.Receptionist);
         var isAssignedDoctor = appointment.DoctorId == _currentUserService.DoctorId;
 
-        if (!isAdmin && !isAssignedDoctor)
+        if (!isAdminOrStaff && !isAssignedDoctor)
         {
-            throw new ForbiddenAccessException("Only the attending doctor or an administrator can mark an appointment as completed.");
+            throw new ForbiddenAccessException("Only the attending doctor, receptionist, or an administrator can mark an appointment as completed.");
         }
 
         appointment.Complete();

@@ -18,7 +18,9 @@
             <div>
                 <span class="px-3 py-1.5 text-xs font-semibold rounded-full 
                     @(Model.Appointment.Status == "Scheduled" ? "bg-blue-50 text-blue-700 border border-blue-200" :
-                      Model.Appointment.Status == "Completed" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200")">
+                      Model.Appointment.Status == "Completed" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                      Model.Appointment.Status == "NoShow" ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                      "bg-red-50 text-red-700 border border-red-200")">
                     @Model.Appointment.Status
                 </span>
             </div>
@@ -59,14 +61,22 @@
         @if (Model.Appointment.Status == "Scheduled")
         {
             <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                @if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
+                @if (User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Receptionist"))
                 {
-                    <form asp-action="Complete" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-check"></i> Mark as Completed
-                        </button>
-                    </form>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <form asp-action="Complete" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check"></i> Mark as Completed
+                            </button>
+                        </form>
+                        <form asp-action="MarkNoShow" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="w-full sm:w-auto px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-user-slash"></i> No-Show
+                            </button>
+                        </form>
+                    </div>
                 }
 
                 <!-- Cancel with reason prompt -->

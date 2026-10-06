@@ -23,6 +23,7 @@
                 <option value="Scheduled" selected="@(Model.Status == "Scheduled")">Scheduled</option>
                 <option value="Completed" selected="@(Model.Status == "Completed")">Completed</option>
                 <option value="Cancelled" selected="@(Model.Status == "Cancelled")">Cancelled</option>
+                <option value="NoShow" selected="@(Model.Status == "NoShow")">No-Show</option>
             </select>
         </div>
         <div>
@@ -85,7 +86,9 @@
                                 <td class="py-3.5 px-4">
                                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full 
                                         @(appt.Status == "Scheduled" ? "bg-blue-50 text-blue-700" :
-                                          appt.Status == "Completed" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700")">
+                                          appt.Status == "Completed" ? "bg-emerald-50 text-emerald-700" :
+                                          appt.Status == "NoShow" ? "bg-amber-50 text-amber-700" :
+                                          "bg-red-50 text-red-700")">
                                         @appt.Status
                                     </span>
                                 </td>

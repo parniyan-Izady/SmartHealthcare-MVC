@@ -8,6 +8,7 @@ using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.Features.Appointments.Commands.BookAppointment;
 using SmartHealthcare.Application.Features.Appointments.Commands.CancelAppointment;
 using SmartHealthcare.Application.Features.Appointments.Commands.CompleteAppointment;
+using SmartHealthcare.Application.Features.Appointments.Commands.MarkNoShow;
 using SmartHealthcare.Application.Features.Appointments.Queries.GetAppointmentById;
 using SmartHealthcare.Application.Features.Appointments.Queries.GetPagedAppointments;
 using SmartHealthcare.Application.Features.Doctors.Queries.GetPagedDoctors;
@@ -240,7 +241,7 @@ public class AppointmentController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Doctor")]
+    [Authorize(Roles = "Admin,Doctor,Receptionist")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Complete(Guid id, CancellationToken ct)
     {
@@ -273,6 +274,41 @@ public class AppointmentController : Controller
         {
             _logger.LogError(ex, "Error completing appointment {Id}", id);
             TempData["ErrorMessage"] = "An error occurred while completing the appointment.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Doctor,Receptionist")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkNoShow(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var command = new MarkNoShowCommand(id);
+            bool updated = await _sender.Send(command, ct);
+            if (!updated)
+            {
+                TempData["ErrorMessage"] = $"Appointment with ID '{id}' was not found.";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = "Appointment marked as No-Show.";
+            }
+        }
+        catch (ForbiddenAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+        catch (DomainException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error marking appointment as no-show {Id}", id);
+            TempData["ErrorMessage"] = "An error occurred while updating the appointment.";
         }
 
         return RedirectToAction(nameof(Details), new { id });
