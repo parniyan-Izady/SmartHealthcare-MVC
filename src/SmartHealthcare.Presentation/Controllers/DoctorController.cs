@@ -3,11 +3,14 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartHealthcare.Presentation.ViewModels.Doctor;
+using SmartHealthcare.Application.Common.Exceptions;
+using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.Features.Doctors.Commands.CreateDoctor;
 using SmartHealthcare.Application.Features.Doctors.Commands.DeleteDoctor;
 using SmartHealthcare.Application.Features.Doctors.Commands.UpdateDoctor;
 using SmartHealthcare.Application.Features.Doctors.Queries.GetDoctorById;
 using SmartHealthcare.Application.Features.Doctors.Queries.GetPagedDoctors;
+using SmartHealthcare.Domain.Enums;
 using SmartHealthcare.Domain.Exceptions;
 
 namespace SmartHealthcare.Presentation.Controllers;
@@ -15,13 +18,16 @@ namespace SmartHealthcare.Presentation.Controllers;
 public class DoctorController : Controller
 {
     private readonly ISender _sender;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<DoctorController> _logger;
 
     public DoctorController(
         ISender sender,
+        ICurrentUserService currentUserService,
         ILogger<DoctorController> logger)
     {
         _sender = sender;
+        _currentUserService = currentUserService;
         _logger = logger;
     }
 
@@ -78,14 +84,14 @@ public class DoctorController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public IActionResult Create()
     {
         return View(new DoctorCreateViewModel());
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(DoctorCreateViewModel model, CancellationToken ct)
     {
@@ -95,6 +101,7 @@ public class DoctorController : Controller
                 model.FirstName,
                 model.LastName,
                 model.Email,
+                model.PhoneNumber,
                 model.Password,
                 model.MedicalLicenseNumber,
                 model.MedicalSpecialty,
@@ -114,6 +121,11 @@ public class DoctorController : Controller
             }
             return View(model);
         }
+        catch (ForbiddenAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Index));
+        }
         catch (DomainException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
@@ -128,7 +140,7 @@ public class DoctorController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Admin,Doctor")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
     {
         var doctor = await _sender.Send(new GetDoctorByIdQuery(id), ct);
@@ -138,15 +150,17 @@ public class DoctorController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var names = doctor.FullName.Split(' ', 2);
-        var firstName = names.Length > 0 ? names[0] : "";
-        var lastName = names.Length > 1 ? names[1] : "";
+        if (!_currentUserService.IsInRole(UserRole.Admin) && doctor.Id != _currentUserService.DoctorId)
+        {
+            TempData["ErrorMessage"] = "You do not have permission to edit another doctor's profile.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
 
         var model = new DoctorEditViewModel
         {
             Id = doctor.Id,
-            FirstName = firstName,
-            LastName = lastName,
+            FirstName = doctor.FirstName,
+            LastName = doctor.LastName,
             Email = doctor.Email,
             MedicalLicenseNumber = doctor.MedicalLicenseNumber,
             MedicalSpecialty = doctor.MedicalSpecialty,
@@ -158,7 +172,7 @@ public class DoctorController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin,Doctor")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, DoctorEditViewModel model, CancellationToken ct)
     {
@@ -196,6 +210,11 @@ public class DoctorController : Controller
             }
             return View(model);
         }
+        catch (ForbiddenAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Details), new { id });
+        }
         catch (DomainException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
@@ -210,7 +229,7 @@ public class DoctorController : Controller
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
@@ -229,6 +248,10 @@ public class DoctorController : Controller
         catch (ValidationException ex)
         {
             TempData["ErrorMessage"] = string.Join("; ", ex.Errors.Select(e => e.ErrorMessage));
+        }
+        catch (ForbiddenAccessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
         }
         catch (Exception ex)
         {

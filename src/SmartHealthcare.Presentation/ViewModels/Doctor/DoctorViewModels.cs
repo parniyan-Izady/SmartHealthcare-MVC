@@ -42,6 +42,11 @@ public class DoctorCreateViewModel
     [Display(Name = "Password")]
     public string Password { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Phone number is required.")]
+    [Phone]
+    [Display(Name = "Phone Number")]
+    public string PhoneNumber { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "Medical License Number is required.")]
     [StringLength(50)]
     [Display(Name = "Medical License Number")]
