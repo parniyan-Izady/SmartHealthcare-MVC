@@ -10,9 +10,12 @@
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Doctors Directory</h1>
             <p class="text-slate-500 text-sm mt-0.5">Browse certified medical specialists and department doctors</p>
         </div>
-        <a asp-controller="Doctor" asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-xl shadow-sm transition">
-            <i class="fa-solid fa-user-plus text-xs"></i> Register New Doctor
-        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="Doctor" asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-xl shadow-sm transition">
+                <i class="fa-solid fa-user-plus text-xs"></i> Register New Doctor
+            </a>
+        }
     </div>
 
     <!-- Search & Filter Bar -->

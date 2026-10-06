@@ -32,16 +32,22 @@
                class="flex-1 sm:flex-none text-center px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-xl shadow-sm transition">
                 <i class="fa-solid fa-calendar-plus text-xs mr-1"></i> Book Visit
             </a>
-            <a asp-action="Edit" asp-route-id="@Model.Doctor.Id" 
-               class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition">
-                Edit
-            </a>
-            <form asp-action="Delete" asp-route-id="@Model.Doctor.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this doctor?');" class="inline">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition" title="Delete">
-                    <i class="fa-regular fa-trash-can"></i>
-                </button>
-            </form>
+            @if (User.IsInRole("Admin") || (User.IsInRole("Doctor") && User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.Doctor.UserId.ToString()))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Doctor.Id" 
+                   class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition">
+                    Edit
+                </a>
+            }
+            @if (User.IsInRole("Admin"))
+            {
+                <form asp-action="Delete" asp-route-id="@Model.Doctor.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this doctor?');" class="inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="p-2.5 text-red-600 hover:bg-red-50 rounded-xl transition" title="Delete">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                </form>
+            }
         </div>
     </div>
 
