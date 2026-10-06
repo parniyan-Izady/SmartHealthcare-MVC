@@ -1,13 +1,11 @@
-using System.Security.Claims;
 using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Presentation.ViewModels.Account;
-using SmartHealthcare.Application.Features.Auth.Commands.LoginUser;
 using SmartHealthcare.Application.Features.Auth.Commands.RegisterUser;
+using SmartHealthcare.Domain.Enums;
 using SmartHealthcare.Domain.Exceptions;
 
 namespace SmartHealthcare.Presentation.Controllers;
@@ -15,11 +13,16 @@ namespace SmartHealthcare.Presentation.Controllers;
 public class AccountController : Controller
 {
     private readonly ISender _sender;
+    private readonly ISignInService _signInService;
     private readonly ILogger<AccountController> _logger;
 
-    public AccountController(ISender sender, ILogger<AccountController> logger)
+    public AccountController(
+        ISender sender,
+        ISignInService signInService,
+        ILogger<AccountController> logger)
     {
         _sender = sender;
+        _signInService = signInService;
         _logger = logger;
     }
 
@@ -38,7 +41,7 @@ public class AccountController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginViewModel model, CancellationToken ct)
+    public async Task<IActionResult> Login(LoginViewModel model, CancellationToken ct = default)
     {
         if (!ModelState.IsValid)
         {
@@ -47,28 +50,26 @@ public class AccountController : Controller
 
         try
         {
-            var command = new LoginUserCommand(model.Email, model.Password);
-            var authResponse = await _sender.Send(command, ct);
+            var (succeeded, isLockedOut, requiresTwoFactor, errorMessage) = await _signInService.PasswordSignInAsync(
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true);
 
-            var claims = new List<Claim>
+            if (isLockedOut)
             {
-                new(ClaimTypes.NameIdentifier, authResponse.UserId.ToString()),
-                new(ClaimTypes.Name, authResponse.FullName),
-                new(ClaimTypes.Email, authResponse.Email),
-                new(ClaimTypes.Role, authResponse.Role),
-                new("JwtToken", authResponse.Token)
-            };
+                _logger.LogWarning("User account locked out for {Email}.", model.Email);
+                return View("Lockout");
+            }
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties
+            if (!succeeded)
             {
-                IsPersistent = model.RememberMe,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
-            };
+                ModelState.AddModelError(string.Empty, errorMessage ?? "Invalid email or password.");
+                return View(model);
+            }
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            TempData["SuccessMessage"] = $"Welcome back, {authResponse.FullName}!";
+            _logger.LogInformation("User {Email} logged in successfully.", model.Email);
+            TempData["SuccessMessage"] = "Welcome back!";
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
@@ -113,7 +114,7 @@ public class AccountController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(RegisterViewModel model, CancellationToken ct)
+    public async Task<IActionResult> Register(RegisterViewModel model, CancellationToken ct = default)
     {
         if (!ModelState.IsValid)
         {
@@ -127,24 +128,15 @@ public class AccountController : Controller
                 model.LastName,
                 model.Email,
                 model.Password,
-                model.Role
+                UserRole.Patient
             );
 
             var authResponse = await _sender.Send(command, ct);
 
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, authResponse.UserId.ToString()),
-                new(ClaimTypes.Name, authResponse.FullName),
-                new(ClaimTypes.Email, authResponse.Email),
-                new(ClaimTypes.Role, authResponse.Role),
-                new("JwtToken", authResponse.Token)
-            };
+            await _signInService.SignInUserAsync(authResponse.UserId, isPersistent: false);
 
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
-
-            TempData["SuccessMessage"] = "Registration completed successfully!";
+            _logger.LogInformation("New user {Email} registered successfully.", model.Email);
+            TempData["SuccessMessage"] = "Registration completed successfully! Welcome aboard.";
             return RedirectToAction("Index", "Home");
         }
         catch (ValidationException ex)
@@ -173,7 +165,7 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await _signInService.SignOutAsync();
         TempData["SuccessMessage"] = "You have been logged out.";
         return RedirectToAction("Index", "Home");
     }
