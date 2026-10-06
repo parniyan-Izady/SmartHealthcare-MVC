@@ -5,7 +5,7 @@ using SmartHealthcare.Presentation.ViewModels;
 using SmartHealthcare.Presentation.ViewModels.Home;
 using SmartHealthcare.Application.Features.Appointments.Queries.GetPagedAppointments;
 using SmartHealthcare.Application.Features.Doctors.Queries.GetPagedDoctors;
-using SmartHealthcare.Application.Features.Patients.Queries.GetHighPerformancePatientReport;
+using SmartHealthcare.Application.Features.Patients.Queries.GetPatientsCount;
 
 namespace SmartHealthcare.Presentation.Controllers;
 
@@ -22,19 +22,15 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index(CancellationToken ct)
     {
-        var doctorsQuery = new GetPagedDoctorsQuery(Page: 1, PageSize: 5, SortBy: "LastName", SortOrder: "asc");
-        var doctors = await _sender.Send(doctorsQuery, ct);
-
-        var appointmentsQuery = new GetPagedAppointmentsQuery(Page: 1, PageSize: 5, SortBy: "StartUtc", SortOrder: "asc");
-        var appointments = await _sender.Send(appointmentsQuery, ct);
-
-        var patientReports = await _sender.Send(new GetHighPerformancePatientReportQuery(), ct);
+        var doctors = await _sender.Send(new GetPagedDoctorsQuery(Page: 1, PageSize: 5, SortBy: "LastName", SortOrder: "asc"), ct);
+        var appointments = await _sender.Send(new GetPagedAppointmentsQuery(Page: 1, PageSize: 5, SortBy: "StartUtc", SortOrder: "asc"), ct);
+        var totalPatients = await _sender.Send(new GetPatientsCountQuery(), ct);
 
         var viewModel = new DashboardViewModel
         {
             TotalDoctors = doctors.TotalCount,
             TotalAppointments = appointments.TotalCount,
-            TotalPatients = patientReports.Count,
+            TotalPatients = totalPatients,
             RecentDoctors = doctors.Items,
             UpcomingAppointments = appointments.Items
         };

@@ -1,37 +1,37 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SmartHealthcare.Presentation.ViewModels.Patient;
+using SmartHealthcare.Application.Common.Interfaces;
 using SmartHealthcare.Application.DTOs;
-using SmartHealthcare.Application.Features.Patients.Queries.GetHighPerformancePatientReport;
+using SmartHealthcare.Application.Features.Patients.Queries.GetPatientReports;
+using SmartHealthcare.Domain.Enums;
+using SmartHealthcare.Presentation.ViewModels.Patient;
 
 namespace SmartHealthcare.Presentation.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin,Doctor,Nurse,Receptionist")]
 public class PatientController : Controller
 {
     private readonly ISender _sender;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<PatientController> _logger;
 
-    public PatientController(ISender sender, ILogger<PatientController> logger)
+    public PatientController(
+        ISender sender, 
+        ICurrentUserService currentUserService,
+        ILogger<PatientController> logger)
     {
         _sender = sender;
+        _currentUserService = currentUserService;
         _logger = logger;
     }
 
     [HttpGet]
     public async Task<IActionResult> Index(string? searchTerm, CancellationToken ct)
     {
-        var reports = await _sender.Send(new GetHighPerformancePatientReportQuery(), ct);
+        Guid? doctorId = _currentUserService.IsInRole(UserRole.Doctor) ? _currentUserService.DoctorId : null;
 
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            reports = reports.Where(r => 
-                r.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                r.NationalCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                r.PhoneNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
-        }
+        var reports = await _sender.Send(new GetPatientReportsQuery(searchTerm, doctorId), ct);
 
         var viewModel = new PatientReportViewModel
         {
