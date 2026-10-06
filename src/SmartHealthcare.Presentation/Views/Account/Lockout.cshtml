@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Account Locked";
+}
+
+<div class="max-w-md mx-auto my-12 text-center bg-white p-8 rounded-2xl border border-rose-200 shadow-sm">
+    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-100 flex items-center justify-center text-rose-600">
+        <i class="fa-solid fa-user-lock text-2xl"></i>
+    </div>
+    <h1 class="text-2xl font-bold text-slate-900 mb-2">Account Temporarily Locked</h1>
+    <p class="text-slate-600 mb-6 text-sm leading-relaxed">
+        This account has been temporarily locked out due to multiple failed login attempts to protect your security. 
+        Please try again after a few minutes or reset your password.
+    </p>
+
+    <div class="flex items-center justify-center gap-3">
+        <a asp-action="Login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700 transition shadow-sm text-sm">
+            <i class="fa-solid fa-arrow-left"></i> Back to Login
+        </a>
+        <a asp-controller="Home" asp-action="Index" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition text-sm">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+    </div>
+</div>

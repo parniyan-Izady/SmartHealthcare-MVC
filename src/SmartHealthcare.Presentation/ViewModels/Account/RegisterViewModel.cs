@@ -31,8 +31,4 @@ public class RegisterViewModel
     [Display(Name = "Confirm Password")]
     [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Role is required.")]
-    [Display(Name = "Account Role")]
-    public UserRole Role { get; set; } = UserRole.Patient;
 }
