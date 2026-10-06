@@ -1,8 +1,4 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using SmartHealthcare.Presentation.Middlewares;
 using SmartHealthcare.Application;
 using SmartHealthcare.Infrastructure;
 
@@ -10,13 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add MVC Services to Container
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// Add Authentication (Cookie for MVC + Optional JWT Bearer)
-var jwtSecret = builder.Configuration["JwtSettings:Secret"] ?? "SuperSecretKeyForSmartHealthcareCleanArchitecture2026!";
-
+// Add Cookie Authentication for MVC
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -29,19 +24,6 @@ builder.Services.AddAuthentication(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
-})
-.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "SmartHealthcare",
-        ValidAudience = builder.Configuration["JwtSettings:Audience"] ?? "SmartHealthcareClient",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
-    };
 });
 
 builder.Services.AddAuthorization();
@@ -58,8 +40,6 @@ else
 {
     app.UseDeveloperExceptionPage();
 }
-
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

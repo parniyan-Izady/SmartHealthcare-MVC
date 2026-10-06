@@ -13,8 +13,4 @@
     <ProjectReference Include="..\SmartHealthcare.Infrastructure\SmartHealthcare.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-  </ItemGroup>
-
 </Project>
