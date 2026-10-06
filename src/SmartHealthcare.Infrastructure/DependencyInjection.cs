@@ -40,6 +40,12 @@ public static class DependencyInjection
         services.AddScoped<ISignInService, SignInService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+        // Email & Notification Services
+        services.Configure<SmartHealthcare.Infrastructure.Services.EmailSettings>(
+            configuration.GetSection("EmailSettings"));
+        services.AddScoped<IEmailSender, SmartHealthcare.Infrastructure.Services.EmailSender>();
+        services.AddScoped<INotificationSender>(sp => sp.GetRequiredService<IEmailSender>());
+
         // Repositories & Unit Of Work
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
