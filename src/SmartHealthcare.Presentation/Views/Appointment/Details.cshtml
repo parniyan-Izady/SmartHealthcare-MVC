@@ -59,12 +59,15 @@
         @if (Model.Appointment.Status == "Scheduled")
         {
             <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <form asp-action="Complete" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-check"></i> Mark as Completed
-                    </button>
-                </form>
+                @if (User.IsInRole("Admin") || User.IsInRole("Doctor"))
+                {
+                    <form asp-action="Complete" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check"></i> Mark as Completed
+                        </button>
+                    </form>
+                }
 
                 <!-- Cancel with reason prompt -->
                 <form asp-action="Cancel" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto flex items-center gap-2">

@@ -31,11 +31,22 @@
                 <span asp-validation-for="DoctorId" class="text-xs text-red-600 mt-1 block"></span>
             </div>
 
-            <div>
-                <label asp-for="PatientId" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Patient Guid ID</label>
-                <input asp-for="PatientId" placeholder="e.g. 00000000-0000-0000-0000-000000000000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500" />
-                <span asp-validation-for="PatientId" class="text-xs text-red-600 mt-1 block"></span>
-            </div>
+            @if (User.IsInRole("Patient"))
+            {
+                <input type="hidden" asp-for="PatientId" />
+                <div class="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800 flex items-center gap-2">
+                    <i class="fa-solid fa-user-check text-teal-600"></i>
+                    <span>Booking for your authenticated patient account.</span>
+                </div>
+            }
+            else
+            {
+                <div>
+                    <label asp-for="PatientId" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Patient Guid ID</label>
+                    <input asp-for="PatientId" placeholder="e.g. 00000000-0000-0000-0000-000000000000" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500" />
+                    <span asp-validation-for="PatientId" class="text-xs text-red-600 mt-1 block"></span>
+                </div>
+            }
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
