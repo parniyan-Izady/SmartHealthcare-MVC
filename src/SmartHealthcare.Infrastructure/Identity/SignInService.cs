@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using SmartHealthcare.Application.Common.Interfaces;
+using SmartHealthcare.Application.DTOs;
 using SmartHealthcare.Application.Repositories;
 using SmartHealthcare.Domain.Enums;
 using System.Security.Claims;
@@ -80,6 +81,65 @@ public class SignInService : ISignInService
     public async Task SignOutAsync()
     {
         await _signInManager.SignOutAsync();
+    }
+
+    /// Gets the current user's info after they pass the first step (password authentication).
+    public async Task<UserDto?> GetTwoFactorAuthenticationUserAsync()
+    {
+        var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+        if (user == null)
+        {
+            return null;
+        }
+
+        return new UserDto(
+            user.Id,
+            user.Email,
+            user.Role,
+            user.IsActive);
+    }
+
+    /// Finds the user by email and generates a one-time OTP code for email or SMS delivery.
+    public async Task<string> GenerateTwoFactorTokenAsync(string email, string provider = "Email")
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            throw new InvalidOperationException($"User with email '{email}' not found.");
+        }
+
+        return await _userManager.GenerateTwoFactorTokenAsync(user, provider);
+    }
+
+    /// Verifies the 2FA state and entered code:
+    /// - If valid: signs in and refreshes custom claims.
+    /// - If failed: returns account lockout or invalid code error.
+    public async Task<(bool Succeeded, bool IsLockedOut, string? ErrorMessage)> TwoFactorSignInAsync(
+        string provider,
+        string code,
+        bool isPersistent,
+        bool rememberClient)
+    {
+        var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+        if (user == null)
+        {
+            return (false, false, "Unable to load two-factor authentication user.");
+        }
+
+        var result = await _signInManager.TwoFactorSignInAsync(provider, code, isPersistent, rememberClient);
+
+        if (result.Succeeded)
+        {
+            await RefreshCustomClaimsAsync(user, isPersistent);
+            return (true, false, null);
+        }
+
+        if (result.IsLockedOut)
+        {
+            return (false, true, "Account is locked out.");
+        }
+
+        return (false, false, "Invalid verification code.");
     }
 
     private async Task RefreshCustomClaimsAsync(ApplicationUser user, bool isPersistent)
