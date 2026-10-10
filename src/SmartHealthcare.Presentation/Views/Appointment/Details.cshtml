@@ -61,7 +61,7 @@
         @if (Model.Appointment.Status == "Scheduled")
         {
             <div class="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                @if (User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Receptionist"))
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin") || User.IsInRole("Doctor") || User.IsInRole("Receptionist"))
                 {
                     <div class="flex items-center gap-2 w-full sm:w-auto">
                         <form asp-action="Complete" asp-route-id="@Model.Appointment.Id" method="post" class="w-full sm:w-auto">

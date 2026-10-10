@@ -63,6 +63,13 @@
                            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition flex items-center gap-2">
                             <i class="fa-solid fa-users text-slate-400"></i> Patient Reports
                         </a>
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Staff" asp-action="Index" 
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-teal-700 hover:bg-slate-100 transition flex items-center gap-2">
+                                <i class="fa-solid fa-user-shield text-slate-400"></i> Staff
+                            </a>
+                        }
                     </nav>
                 </div>
 
