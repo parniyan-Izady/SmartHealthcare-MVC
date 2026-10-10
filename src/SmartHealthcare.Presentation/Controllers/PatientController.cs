@@ -9,7 +9,7 @@ using SmartHealthcare.Presentation.ViewModels.Patient;
 
 namespace SmartHealthcare.Presentation.Controllers;
 
-[Authorize(Roles = "Admin,Doctor,Receptionist")]
+[Authorize(Roles = "SuperAdmin,Admin,Doctor,Receptionist")]
 public class PatientController : Controller
 {
     private readonly ISender _sender;

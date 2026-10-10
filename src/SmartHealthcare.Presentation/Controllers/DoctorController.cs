@@ -84,14 +84,14 @@ public class DoctorController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
     public IActionResult Create()
     {
         return View(new DoctorCreateViewModel());
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(DoctorCreateViewModel model, CancellationToken ct)
     {
@@ -140,7 +140,7 @@ public class DoctorController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Doctor")]
+    [Authorize(Roles = "SuperAdmin,Admin,Doctor")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
     {
         var doctor = await _sender.Send(new GetDoctorByIdQuery(id), ct);
@@ -150,7 +150,7 @@ public class DoctorController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        if (!_currentUserService.IsInRole(UserRole.Admin) && doctor.Id != _currentUserService.DoctorId)
+        if (!_currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin) && doctor.Id != _currentUserService.DoctorId)
         {
             TempData["ErrorMessage"] = "You do not have permission to edit another doctor's profile.";
             return RedirectToAction(nameof(Details), new { id });
@@ -172,7 +172,7 @@ public class DoctorController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Doctor")]
+    [Authorize(Roles = "SuperAdmin,Admin,Doctor")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, DoctorEditViewModel model, CancellationToken ct)
     {
@@ -229,7 +229,7 @@ public class DoctorController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {

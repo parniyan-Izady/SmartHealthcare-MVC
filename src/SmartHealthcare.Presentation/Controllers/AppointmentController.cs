@@ -48,7 +48,7 @@ public class AppointmentController : Controller
         string? sortOrder = "asc",
         CancellationToken ct = default)
     {
-        var isStaff = _currentUserService.IsInRole(UserRole.Admin, UserRole.Receptionist);
+        var isStaff = _currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin, UserRole.Receptionist);
 
         if (!isStaff)
         {
@@ -116,7 +116,7 @@ public class AppointmentController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Patient,Receptionist")]
+    [Authorize(Roles = "SuperAdmin,Admin,Patient,Receptionist")]
     public async Task<IActionResult> Book(CancellationToken ct)
     {
         var doctorsResult = await _sender.Send(new GetPagedDoctorsQuery(PageSize: 100, IsActive: true), ct);
@@ -137,7 +137,7 @@ public class AppointmentController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Patient,Receptionist")]
+    [Authorize(Roles = "SuperAdmin,Admin,Patient,Receptionist")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Book(AppointmentBookViewModel model, CancellationToken ct)
     {
@@ -202,7 +202,7 @@ public class AppointmentController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Doctor,Patient,Receptionist")]
+    [Authorize(Roles = "SuperAdmin,Admin,Doctor,Patient,Receptionist")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(Guid id, string reason, CancellationToken ct)
     {
@@ -241,7 +241,7 @@ public class AppointmentController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Doctor,Receptionist")]
+    [Authorize(Roles = "SuperAdmin,Admin,Doctor,Receptionist")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Complete(Guid id, CancellationToken ct)
     {
@@ -280,7 +280,7 @@ public class AppointmentController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Doctor,Receptionist")]
+    [Authorize(Roles = "SuperAdmin,Admin,Doctor,Receptionist")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkNoShow(Guid id, CancellationToken ct)
     {
