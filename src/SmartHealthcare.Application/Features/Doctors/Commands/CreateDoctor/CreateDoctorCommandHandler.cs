@@ -34,7 +34,7 @@ public class CreateDoctorCommandHandler : ICommandHandler<CreateDoctorCommand, D
 
     public async Task<DoctorResponse> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
     {
-        if (!_currentUserService.IsInRole(UserRole.Admin))
+        if (!_currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin))
         {
             throw new ForbiddenAccessException("Only administrators can register doctor profiles.");
         }

@@ -35,7 +35,7 @@ public class UpdateDoctorCommandHandler : ICommandHandler<UpdateDoctorCommand, D
             return null;
         }
 
-        var isAdmin = _currentUserService.IsInRole(UserRole.Admin);
+        var isAdmin = _currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin);
 
         if (!isAdmin && doctor.Id != _currentUserService.DoctorId)
         {

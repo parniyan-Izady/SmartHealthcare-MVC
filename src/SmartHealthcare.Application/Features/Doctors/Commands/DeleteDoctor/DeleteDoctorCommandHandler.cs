@@ -24,7 +24,7 @@ public class DeleteDoctorCommandHandler : ICommandHandler<DeleteDoctorCommand, b
 
     public async Task<bool> Handle(DeleteDoctorCommand request, CancellationToken cancellationToken)
     {
-        if (!_currentUserService.IsInRole(UserRole.Admin))
+        if (!_currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin))
         {
             throw new ForbiddenAccessException("Only administrators can delete doctor profiles.");
         }
