@@ -24,6 +24,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .MinimumLength(8).WithMessage("Password must be at least 8 characters long.");
 
         RuleFor(x => x.Role)
-            .IsInEnum().WithMessage("A valid user role must be selected.");
+            .IsInEnum().WithMessage("A valid user role must be selected.")
+            .NotEqual(Domain.Enums.UserRole.SuperAdmin).WithMessage("Cannot create a SuperAdmin account through registration.");
     }
 }
