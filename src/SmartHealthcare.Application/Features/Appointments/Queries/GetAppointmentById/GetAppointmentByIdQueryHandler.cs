@@ -33,7 +33,7 @@ public class GetAppointmentByIdQueryHandler : IQueryHandler<GetAppointmentByIdQu
         }
 
         var currentUserId = _currentUserService.UserId;
-        var isStaff = _currentUserService.IsInRole(UserRole.Admin, UserRole.Receptionist);
+        var isStaff = _currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin, UserRole.Receptionist);
 
         if (!isStaff)
         {

@@ -31,7 +31,7 @@ public class GetPagedAppointmentsQueryHandler : IQueryHandler<GetPagedAppointmen
         Guid? effectiveDoctorId = request.DoctorId;
         Guid? effectivePatientId = request.PatientId;
 
-        var isStaff = _currentUserService.IsInRole(UserRole.Admin, UserRole.Receptionist);
+        var isStaff = _currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin, UserRole.Receptionist);
 
         if (!isStaff)
         {

@@ -30,7 +30,7 @@ public class CancelAppointmentCommandHandler : ICommandHandler<CancelAppointment
             return false;
         }
 
-        var isAdminOrStaff = _currentUserService.IsInRole(UserRole.Admin, UserRole.Receptionist);
+        var isAdminOrStaff = _currentUserService.IsInRole(UserRole.SuperAdmin, UserRole.Admin, UserRole.Receptionist);
         var isAssignedDoctor = appointment.DoctorId == _currentUserService.DoctorId;
         var isOwnerPatient = appointment.PatientId == _currentUserService.PatientId;
 
