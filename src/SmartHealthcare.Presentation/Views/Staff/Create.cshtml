@@ -1,0 +1,97 @@
+@model SmartHealthcare.Presentation.ViewModels.Staff.CreateStaffViewModel
+@{
+    ViewData["Title"] = "Add Staff Member";
+}
+
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Breadcrumb / Header -->
+    <div class="flex items-center gap-2 text-sm text-slate-500">
+        <a asp-action="Index" class="hover:text-teal-600 transition">Staff Management</a>
+        <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+        <span class="text-slate-800 font-medium">Add New Staff</span>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div class="flex items-center gap-3 pb-6 border-b border-slate-100">
+            <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-slate-900 tracking-tight">Create Staff Account</h1>
+                <p class="text-slate-500 text-sm">Provision a new administrative or reception account</p>
+            </div>
+        </div>
+
+        <form asp-action="Create" method="post" class="space-y-5 mt-6">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm"></div>
+
+            <!-- Role Selection -->
+            <div>
+                <label asp-for="Role" class="block text-sm font-semibold text-slate-700 mb-1.5"></label>
+                <div class="relative">
+                    <select asp-for="Role" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                        @foreach (var role in Model.AvailableRoles)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                </div>
+                <span asp-validation-for="Role" class="text-xs text-red-600 mt-1 block"></span>
+                @if (Model.AvailableRoles.Count == 1)
+                {
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="fa-solid fa-circle-info text-slate-400 mr-1"></i> As an Administrator, you are authorized to register Receptionist accounts. Only SuperAdmin can create other Administrators.
+                    </p>
+                }
+            </div>
+
+            <!-- Email Address -->
+            <div>
+                <label asp-for="Email" class="block text-sm font-semibold text-slate-700 mb-1.5"></label>
+                <input asp-for="Email" type="email" placeholder="staff.member@smarthealthcare.com"
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                <span asp-validation-for="Email" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+                <label asp-for="PhoneNumber" class="block text-sm font-semibold text-slate-700 mb-1.5"></label>
+                <input asp-for="PhoneNumber" type="tel" placeholder="+1234567890"
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                <span asp-validation-for="PhoneNumber" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <!-- Password -->
+            <div>
+                <label asp-for="Password" class="block text-sm font-semibold text-slate-700 mb-1.5"></label>
+                <input asp-for="Password" type="password" placeholder="••••••••"
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                <span asp-validation-for="Password" class="text-xs text-red-600 mt-1 block"></span>
+                <p class="text-xs text-slate-400 mt-1">Must be at least 6 characters long.</p>
+            </div>
+
+            <!-- Confirm Password -->
+            <div>
+                <label asp-for="ConfirmPassword" class="block text-sm font-semibold text-slate-700 mb-1.5"></label>
+                <input asp-for="ConfirmPassword" type="password" placeholder="••••••••"
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+                <span asp-validation-for="ConfirmPassword" class="text-xs text-red-600 mt-1 block"></span>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a asp-action="Index" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium transition">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium shadow-sm transition">
+                    Create Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,178 @@
+@model SmartHealthcare.Presentation.ViewModels.Staff.StaffListViewModel
+@{
+    ViewData["Title"] = "Staff Management";
+}
+
+<div class="space-y-6">
+    <!-- Header with Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Staff Management</h1>
+                @if (Model.IsSuperAdmin)
+                {
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                        SuperAdmin Console
+                    </span>
+                }
+                else
+                {
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                        Admin Console
+                    </span>
+                }
+            </div>
+            <p class="text-slate-500 text-sm mt-0.5">
+                @(Model.IsSuperAdmin ? "Manage all administrative accounts and reception personnel" : "Manage reception staff members")
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-xl shadow-sm transition">
+                <i class="fa-solid fa-user-plus text-xs"></i> Add Staff Member
+            </a>
+        </div>
+    </div>
+
+    <!-- Alert / Permissions Info -->
+    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-start gap-3 text-sm text-slate-600">
+        <div class="p-2 bg-white rounded-lg border border-slate-200 text-teal-600">
+            <i class="fa-solid fa-shield-halved text-base"></i>
+        </div>
+        <div>
+            <span class="font-semibold text-slate-800">Security Scope:</span>
+            @if (Model.IsSuperAdmin)
+            {
+                <span class="text-slate-600"> As <strong>SuperAdmin</strong>, you have full control over Administrators and Receptionists (Edit, Reset Password, Deactivate, Delete).</span>
+            }
+            else
+            {
+                <span class="text-slate-600"> As <strong>Admin</strong>, your scope is scoped to Receptionist personnel only.</span>
+            }
+        </div>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <th class="py-3.5 px-6">Staff Member</th>
+                        <th class="py-3.5 px-6">Role</th>
+                        <th class="py-3.5 px-6">Phone</th>
+                        <th class="py-3.5 px-6">Status</th>
+                        <th class="py-3.5 px-6">Created Date</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    @if (!Model.StaffMembers.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="py-10 text-center text-slate-400">
+                                <i class="fa-solid fa-users text-3xl mb-2 text-slate-300 block"></i>
+                                No staff accounts found in your management scope.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var member in Model.StaffMembers)
+                    {
+                        <tr class="hover:bg-slate-50/60 transition">
+                            <td class="py-4 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm">
+                                        @member.Email.FirstOrDefault().ToString().ToUpper()
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-slate-900">@member.Email</div>
+                                        <div class="text-xs text-slate-400">ID: @member.Id.ToString().Substring(0, 8)...</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                @switch (member.Role)
+                                {
+                                    case SmartHealthcare.Domain.Enums.UserRole.Admin:
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                            <i class="fa-solid fa-shield text-[10px]"></i> Admin
+                                        </span>
+                                        break;
+                                    case SmartHealthcare.Domain.Enums.UserRole.Receptionist:
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+                                            <i class="fa-solid fa-headset text-[10px]"></i> Receptionist
+                                        </span>
+                                        break;
+                                    default:
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                                            @member.Role
+                                        </span>
+                                        break;
+                                }
+                            </td>
+                            <td class="py-4 px-6 text-slate-500 text-xs">
+                                @(string.IsNullOrWhiteSpace(member.PhoneNumber) ? "—" : member.PhoneNumber)
+                            </td>
+                            <td class="py-4 px-6">
+                                @if (member.IsActive)
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Inactive
+                                    </span>
+                                }
+                            </td>
+                            <td class="py-4 px-6 text-slate-500 text-xs">
+                                @member.CreatedAtUtc.ToString("MMM dd, yyyy")
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <div class="inline-flex items-center gap-1">
+                                    <!-- Edit Details -->
+                                    <a asp-action="Edit" asp-route-id="@member.Id" 
+                                       class="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition" 
+                                       title="Edit Profile">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+
+                                    <!-- Reset Password -->
+                                    <a asp-action="ResetPassword" asp-route-id="@member.Id" 
+                                       class="p-2 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition" 
+                                       title="Reset Password">
+                                        <i class="fa-solid fa-key"></i>
+                                    </a>
+
+                                    <!-- Toggle Status (Activate / Deactivate) -->
+                                    <form asp-action="ToggleStatus" asp-route-id="@member.Id" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" 
+                                                onclick="return confirm('Change status for @member.Email?');"
+                                                class="p-2 rounded-lg @(member.IsActive ? "text-slate-500 hover:text-red-600 hover:bg-red-50" : "text-emerald-600 hover:bg-emerald-50") transition"
+                                                title="@(member.IsActive ? "Deactivate Account" : "Activate Account")">
+                                            <i class="fa-solid @(member.IsActive ? "fa-user-slash" : "fa-user-check")"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Delete Staff -->
+                                    <form asp-action="Delete" asp-route-id="@member.Id" method="post" class="inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" 
+                                                onclick="return confirm('Are you sure you want to permanently delete @member.Email?');"
+                                                class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition" 
+                                                title="Delete Account">
+                                            <i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
