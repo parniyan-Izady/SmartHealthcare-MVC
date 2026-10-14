@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<ISignInService, SignInService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<ApplicationDbSeeder>();
 
         // Email & Notification Services
         services.Configure<SmartHealthcare.Infrastructure.Services.EmailSettings>(

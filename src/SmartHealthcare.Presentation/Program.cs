@@ -30,6 +30,13 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Seed Database (Roles & SuperAdmin)
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<SmartHealthcare.Infrastructure.Persistence.DbContext.ApplicationDbSeeder>();
+    await seeder.SeedAsync();
+}
+
 // Configure HTTP Request Pipeline
 if (!app.Environment.IsDevelopment())
 {
